@@ -6,6 +6,7 @@ public class Reservation {
     private Date pickUpDate;
     private int numberOfDays;
     private CarType carType;
+    //future scope: reservationId, userDrivingLicenceId
 
     public Reservation(Date pickUpDate, int numberOfDays, CarType carType) {
         this.pickUpDate = pickUpDate;

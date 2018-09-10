@@ -2,7 +2,6 @@ package com.CRD;
 
 import com.CRD.Beans.CarType;
 import com.CRD.Beans.Reservation;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,7 +32,7 @@ public class Receptionist {
                         }
                     }
                 }
-                pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime);
+                pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime, 1);
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -53,6 +52,7 @@ public class Receptionist {
         }
 
         for (int i = 0; i < numberOfDays; i++) {
+            //bucket hashing done on single day for future scalability, this will fasten checkReservationAvailability
             String key = pickUpDateWithZeroTime.toString();
             if (reservations.containsKey(key)) {
                 List<Reservation> reservationList = reservations.get(key);
@@ -63,24 +63,24 @@ public class Receptionist {
                 reservationList.add(reservation);
                 reservations.put(key, reservationList);
             }
-            pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime);
+            pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime, 1);
         }
         return true;
     }
 
-    public static Date getIncrementedDate(Date date)
+    public static Date getIncrementedDate(Date date, int days)
     {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        cal.add(Calendar.DATE, ONE);
+        cal.add(Calendar.DATE, days);
         return cal.getTime();
     }
 
     public void countCarsInitially() {
         availableCars = new Hashtable<>();
-        availableCars.put(CarType.SEDAN, 6);
-        availableCars.put(CarType.SUV, 3);
-        availableCars.put(CarType.VAN, 2);
+        availableCars.put(CarType.SEDAN, SEDAN_COUNT);
+        availableCars.put(CarType.SUV, SUV_COUNT);
+        availableCars.put(CarType.VAN, VAN_COUNT);
 
         reservations = new Hashtable<>();
     }
@@ -91,5 +91,7 @@ public class Receptionist {
 
     private static Map<CarType, Integer> availableCars;
     private static Map<String, List<Reservation>> reservations;
-    private static final int ONE = 1;
+    private static final int SEDAN_COUNT = 2;
+    private static final int VAN_COUNT = 3;
+    private static final int SUV_COUNT = 1;
 }
