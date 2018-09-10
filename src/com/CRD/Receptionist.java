@@ -13,33 +13,23 @@ import java.util.List;
 import java.util.Map;
 
 public class Receptionist {
-    public boolean checkReservationAvailability(Date pickUpDate, int numberOfDays, CarType carType) {
-        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        Date pickUpDateWithZeroTime = null;
-        try {
-            pickUpDateWithZeroTime = formatter.parse(formatter.format(pickUpDate));
-            for (int i = 0; i < numberOfDays; i++) {
-                String key = pickUpDateWithZeroTime.toString();
-                if(reservations.containsKey(key)) {
-                    List<Reservation> reservationList = reservations.get(key);
-                    int carCount = availableCars.get(carType);
-                    for (Reservation reservation : reservationList) {
-                        if (reservation.getCarType().equals(carType)) {
-                            carCount--;
-                        }
-                        if (carCount == 0) {
-                            return false;
-                        }
-                    }
-                }
-                pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime, 1);
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
 
+    /**
+     *
+     * Background: In future, if system stores millions of Reservation,
+     *             then I don't want to go and check if new input reservation is overlapping with those millions of reservations.
+     *
+     * Solution/Scaling: Separated reservations for each day as a List and stored it in HashTable with that Day as a key for future retrieval.
+     *                   So, if I want to check for reservation overlapping, I go to that day directly in O(1) complexity using Day as my key.
+     *
+     * Used below Data Structure for storing newly created Reservations:
+     *              Map<Specific_Day, List<Reservation>> reservations = new Hashtable<>();
+     *
+     * Reason for choosing HashTable: It is thread safe. So we can get Concurrency even when multiple users add new reservations at the same time.
+     *
+     * Future Scope for more Scaling: Use hour as a key instead of day.
+     *                                It will make system 24 time more faster when system is dealing with many/millions of reservations.
+     */
     public boolean createReservation(Date pickUpDate, int numberOfDays, CarType carType) {
         Reservation reservation = new Reservation(pickUpDate,numberOfDays, carType);
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -64,6 +54,37 @@ public class Receptionist {
                 reservations.put(key, reservationList);
             }
             pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime, 1);
+        }
+        return true;
+    }
+
+    /**
+     *
+     * Time Complexity for checking Reservation Availability: O(Constant + number of reservation in that specific day) = ~ O(1)
+     */
+    public boolean checkReservationAvailability(Date pickUpDate, int numberOfDays, CarType carType) {
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date pickUpDateWithZeroTime = null;
+        try {
+            pickUpDateWithZeroTime = formatter.parse(formatter.format(pickUpDate));
+            for (int i = 0; i < numberOfDays; i++) {
+                String key = pickUpDateWithZeroTime.toString();
+                if(reservations.containsKey(key)) {
+                    List<Reservation> reservationList = reservations.get(key);
+                    int carCount = availableCars.get(carType);
+                    for (Reservation reservation : reservationList) {
+                        if (reservation.getCarType().equals(carType)) {
+                            carCount--;
+                        }
+                        if (carCount == 0) {
+                            return false;
+                        }
+                    }
+                }
+                pickUpDateWithZeroTime = getIncrementedDate(pickUpDateWithZeroTime, 1);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
         return true;
     }
